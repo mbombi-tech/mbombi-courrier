@@ -1,16 +1,19 @@
 <?php
-// db.php — Connexion MySQL avec PDO
-
-$host = "localhost";
+// Connexion TiDB Cloud avec PDO
+cloud.com
+$host = "gateway01.eu-central-1.prod.aws.tidbcloud.com";      // ex: gateway01.eu-central-1.prod.aws.tidb
+$port = 4000;
 $dbname = "dbcourriers";
-$user = "root";
-$pass = "";
+$user = "mbombi-tech";
+$pass = "Richessen10?";
 
 try {
-    // DSN = Data Source Name
-    $db = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
+    $db = new PDO(
+        "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4",
+        $user,
+        $pass
+    );
 
-    // Option pour les erreurs PDO
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 } catch (PDOException $e) {
