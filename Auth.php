@@ -10,7 +10,7 @@ if (session_status() === PHP_SESSION_NONE) {
  */
 function requireLogin() {
     if (!isset($_SESSION["user"])) {
-        header("Location: login.php");
+        header("Location: /login.php"); // racine du site
         exit;
     }
 }
@@ -28,29 +28,23 @@ function requireRole(array $roles) {
 }
 
 /**
- * Raccourci pour récupérer l'utilisateur connecté
+ * Récupère l'utilisateur connecté
  */
 function currentUser() {
     return $_SESSION["user"] ?? null;
 }
 
 /**
- * Vérifie si l'utilisateur est admin
+ * Vérifications rapides de rôles
  */
 function isAdmin() {
     return isset($_SESSION["user"]["role"]) && $_SESSION["user"]["role"] === "admin";
 }
 
-/**
- * Vérifie si l'utilisateur est agent
- */
 function isAgent() {
     return isset($_SESSION["user"]["role"]) && $_SESSION["user"]["role"] === "agent";
 }
 
-/**
- * Vérifie si l'utilisateur est directeur
- */
 function isDirecteur() {
     return isset($_SESSION["user"]["role"]) && $_SESSION["user"]["role"] === "directeur";
 }
