@@ -1,4 +1,4 @@
-<?php include "../courrier/header.php"; ?>
+<?php include(__DIR__ . "/courrier/header.php"); ?>
 
 <h2 class="mb-4">Tableau de bord</h2>
 
@@ -31,4 +31,4 @@
     </div>
 </div>
 
-<?php include "../courrier/footer.php"; ?>
+<?php include(__DIR__ . "/courrier/footer.php"); ?>
