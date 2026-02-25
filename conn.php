@@ -4,7 +4,7 @@ $host = "gateway01.eu-central-1.prod.aws.tidbcloud.com";
 $port = 4000;
 $dbname = "dbcourriers";
 $user = "3CcRhwJGS9Zx9di.root";
-$pass = "Richessen10?";
+$pass = "agj9cdG5scfUtrzC";
 
 try {
 
