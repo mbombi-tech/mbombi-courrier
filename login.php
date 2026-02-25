@@ -1,10 +1,14 @@
 <?php
-session_start();
-require_once "../courrier/conn.php";
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_once __DIR__ . "/courrier/conn.php";
 
 // 🔁 Si déjà connecté → dashboard
-if (isset($_SESSION['user_id']) && is_numeric($_SESSION['user_id'])) {
-    header("Location: dashboard.php");
+if (isset($_SESSION['user']['id'])) {
+    header("Location: /dashboard.php");
     exit;
 }
 
@@ -15,55 +19,64 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = trim($_POST["email"] ?? "");
     $mot_de_passe = $_POST["mot_de_passe"] ?? "";
 
-    $sql = "
-        SELECT 
-            u.id,
-            u.nom,
-            u.email,
-            u.mot_de_passe,
-            u.service_id,
-            r.nom AS role
-        FROM utilisateurs u
-        JOIN roles r ON u.role_id = r.id
-        WHERE u.email = ? AND u.actif = 1
-        LIMIT 1
-    ";
+    if (!empty($email) && !empty($mot_de_passe)) {
 
-    $stmt = $db->prepare($sql);
-    $stmt->execute([$email]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Connexion base
+        $database = new Conn();
+        $db = $database->getConnection();
 
-    if ($user && password_verify($mot_de_passe, $user['mot_de_passe'])) {
+        $sql = "
+            SELECT 
+                u.id,
+                u.nom,
+                u.email,
+                u.mot_de_passe,
+                u.service_id,
+                u.role_id,
+                r.nom AS role
+            FROM utilisateurs u
+            JOIN roles r ON u.role_id = r.id
+            WHERE u.email = ? AND u.actif = 1
+            LIMIT 1
+        ";
 
-        // 🔐 Sécurité
-        session_regenerate_id(true);
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        /*
-        ==================================================
-        ✅ STRUCTURE MODERNE (future)
-        ==================================================
-        */
-        $_SESSION['user'] = [
-            'id'         => (int) $user['id'],
-            'nom'        => $user['nom'],
-            'role'       => $user['role'],       // admin | agent | directeur
-			'role_id' => $user['role_id'],
-            'service_id' => (int) $user['service_id']
-        ];
+        if ($user && password_verify($mot_de_passe, $user['mot_de_passe'])) {
 
-        /*
-        ==================================================
-        ✅ COMPATIBILITÉ AVEC LES ANCIENNES PAGES
-        ==================================================
-        */
-        $_SESSION['user_id']    = (int) $user['id'];
-        $_SESSION['role_id']    = $user['role'];       // ⚠️ STRING (admin/agent)
-        $_SESSION['service_id'] = (int) $user['service_id'];
-        
+            // 🔐 Sécurité importante
+            session_regenerate_id(true);
 
-        header("Location: dashboard.php");
-        exit;
+            /*
+            ==================================================
+            ✅ STRUCTURE MODERNE
+            ==================================================
+            */
+            $_SESSION['user'] = [
+                'id'         => (int) $user['id'],
+                'nom'        => $user['nom'],
+                'role'       => $user['role'],
+                'role_id'    => (int) $user['role_id'],
+                'service_id' => (int) $user['service_id']
+            ];
 
+            /*
+            ==================================================
+            ✅ COMPATIBILITÉ ANCIENNES PAGES
+            ==================================================
+            */
+            $_SESSION['user_id']    = (int) $user['id'];
+            $_SESSION['role_id']    = (int) $user['role_id'];
+            $_SESSION['service_id'] = (int) $user['service_id'];
+
+            header("Location: /dashboard.php");
+            exit;
+
+        } else {
+            $error = true;
+        }
     } else {
         $error = true;
     }
@@ -74,6 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Connexion | Gestion Courrier</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
@@ -91,23 +105,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <div class="card-body">
 
                     <?php if ($error): ?>
-                        <div class="alert alert-danger">
+                        <div class="alert alert-danger text-center">
                             Email ou mot de passe incorrect
                         </div>
                     <?php endif; ?>
 
-                    <form method="POST">
+                    <form method="POST" autocomplete="off">
                         <div class="mb-3">
-                            <label>Email</label>
+                            <label class="form-label">Email</label>
                             <input type="email" name="email" class="form-control" required>
                         </div>
 
                         <div class="mb-3">
-                            <label>Mot de passe</label>
+                            <label class="form-label">Mot de passe</label>
                             <input type="password" name="mot_de_passe" class="form-control" required>
                         </div>
 
-                        <button class="btn btn-primary w-100">
+                        <button type="submit" class="btn btn-primary w-100">
                             Se connecter
                         </button>
                     </form>
