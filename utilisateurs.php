@@ -1,7 +1,7 @@
 <?php
 // utilisateurs.php
 session_start();
-require_once __DIR__ . "/conn.php";
+require_once __DIR__ ."/conn.php";
 $db_host="localhost";
 $db_user="root";
 $db_pass="";
